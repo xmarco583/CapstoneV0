@@ -1,27 +1,26 @@
 import streamlit as st
 import joblib
 
-# Áreas en orden
 areas = [
     'CCFM', 'CCSS', 'CCNA', 'CCCO', 'ARTE', 'BURO',
     'CCEP', 'IIAA', 'FINA', 'LING', 'JURI'
 ]
 
-# Mapeo de columnas y filas
+# COLUMNAS (letra "a") - 0-based indices
 column_items = {}
 for idx, area in enumerate(areas):
-    items = [idx + 1 + 13 * i for i in range(11)]  # p1, p14, ..., p131
-    column_items[area] = [n - 1 for n in items]  # 0-based
+    items = [idx + 13 * i for i in range(11)]  # p1 index 0, p14 index 13, etc.
+    column_items[area] = items
 
+# FILAS (letra "b") - 0-based indices
 row_items = {}
 for idx, area in enumerate(areas):
-    start = idx * 11 + 1
+    start = idx * 11
     end = start + 11
     items = list(range(start, end))
-    row_items[area] = [n - 1 for n in items]  # 0-based
+    row_items[area] = items
 
 def calcular_puntajes_directos(respuestas):
-    """Devuelve una lista de 11 puntajes directos en el orden de las áreas."""
     puntajes = []
     for area in areas:
         a_count = sum(respuestas[i] == 'a' or respuestas[i] == 'ambas' for i in column_items[area])
@@ -31,26 +30,26 @@ def calcular_puntajes_directos(respuestas):
 
 
 preguntas = [
-    "1. a) Le gusta resolver problemas de matemáticas;\nb) Prefiere diseñar el modelo de casas, edificios, parques, etc.",
-    "2. a) Le agrada observar la conducta de las personas y opinar sobre su personalidad; \nb) Prefiere expresar un fenómeno concreto en una ecuación matemática.",
-    "3. a) Le gusta caminar por los cerros buscando piedras raras; \nb) Prefiere diseñar las viviendas de una urbanización.",
-    "4. a) Le gusta escribir artículos deportivos para un diario; \nb) Prefiere determinar la resistencia de materiales para una construcción.",
-    "5. a) Le gusta hacer tallado en madera; \nb) Prefiere calcular la cantidad de materiales para una construcción.",
-    "6. a) Le gusta ordenar y archivar documentos; \nb) Prefiere proyectar el sistema eléctrico de una construcción.",
-    "7. a) Le agrada dedicar su tiempo en el estudio de teorías económicas; \nb) Prefiere dedicar su tiempo en la lectura de revistas sobre mecánica.",
-    "8. a) Le gusta mucha la vida militar; \nb) Prefiere diseñar máquinas, motores, etc., de alto rendimiento.",
-    "9. a) Le gusta planificar acerca de cómo formar una cooperativa; \nb) Prefiere estudiar el lenguaje de computación (IBM).",
-    "10. a) Le agrada estudiar la gramática; \nb) Prefiere estudiar las matemáticas.",
-    "11. a) Le interesa mucho ser abogado; \nb) Preferiría dedicarse a escribir un tratado de Física-Matemáticas.",
-    "12. a) Le cuenta a su padre y a su madre todas sus cosas; \nb) Prefiere ocultar algunas cosas para usted solo(a).",
-    "13. a) Le agrada estudiar la estructura anatómica de los cuerpos; \nb) Prefiere asumir la defensa legal de una persona acusada por algún delito.",
-    "14. a) Le interesa mucho estudiar cómo funciona un computador; \nb) Prefiere el estudio de las leyes y principios de la conducta psicológica.",
-    "15. a) Le agrada analizar la forma como se organiza un pueblo; \nb) Prefiere responderse a la pregunta del ¿Por qué de los seres y de las cosas?",
-    "16. a) Le gusta analizar las rocas, piedras y tierra para averiguar su composición mineral; \nb) Prefiere el estudio de las organizaciones sean: campesinas, educativas, laborales, políticas, económicas o religiosas.",
-    "17. a) Le gusta escribir artículos culturales para un diario; \nb) Prefiere pensar largamente acerca de la forma como el hombre podría mejorar su existencia.",
-    "18. a) Le agrada diseñar muebles, puertas, ventanas, etc.; \nb) Prefiere dedicar su tiempo en conocer las costumbres y tradicionales de los pueblos.",
-    "19. a) Le interesa mucho conocer el trámite documentario de un ministerio público; \nb) Prefiere el estudio de las religiones.",
-    "20. a) Le interesa mucho conocer los mecanismos de la economía nacional; \nb) Prefiere ser guía espiritual de las personas.",
+    "a) Le gusta resolver problemas de matemáticas; o\n b) Prefiere diseñar el modelo de casas, edificios, parques, etc.",
+    "a) Le agrada observar la conducta de las personas y opinar sobre su personalidad; \nb) Prefiere expresar un fenómeno concreto en una ecuación matemática.",
+    "a) Le gusta caminar por los cerros buscando piedras raras; \nb) Prefiere diseñar las viviendas de una urbanización.",
+    "a) Le gusta escribir artículos deportivos para un diario; \nb) Prefiere determinar la resistencia de materiales para una construcción.",
+    "a) Le gusta hacer tallado en madera; \nb) Prefiere calcular la cantidad de materiales para una construcción.",
+    "a) Le gusta ordenar y archivar documentos; \nb) Prefiere proyectar el sistema eléctrico de una construcción.",
+    "a) Le agrada dedicar su tiempo en el estudio de teorías económicas; \nb) Prefiere dedicar su tiempo en la lectura de revistas sobre mecánica.",
+    "a) Le gusta mucha la vida militar; \nb) Prefiere diseñar máquinas, motores, etc., de alto rendimiento.",
+    "a) Le gusta planificar acerca de cómo formar una cooperativa; \nb) Prefiere estudiar el lenguaje de computación (IBM).",
+    "a) Le agrada estudiar la gramática; \nb) Prefiere estudiar las matemáticas.",
+    "a) Le interesa mucho ser abogado; \nb) Preferiría dedicarse a escribir un tratado de Física-Matemáticas.",
+    "a) Le cuenta a su padre y a su madre todas sus cosas; \nb) Prefiere ocultar algunas cosas para usted solo(a).",
+    "a) Le agrada estudiar la estructura anatómica de los cuerpos; \nb) Prefiere asumir la defensa legal de una persona acusada por algún delito.",
+    "a) Le interesa mucho estudiar cómo funciona un computador; \nb) Prefiere el estudio de las leyes y principios de la conducta psicológica.",
+    "a) Le agrada analizar la forma como se organiza un pueblo; \nb) Prefiere responderse a la pregunta del ¿Por qué de los seres y de las cosas?",
+    "a) Le gusta analizar las rocas, piedras y tierra para averiguar su composición mineral; \nb) Prefiere el estudio de las organizaciones sean: campesinas, educativas, laborales, políticas, económicas o religiosas.",
+    "a) Le gusta escribir artículos culturales para un diario; \nb) Prefiere pensar largamente acerca de la forma como el hombre podría mejorar su existencia.",
+    "a) Le agrada diseñar muebles, puertas, ventanas, etc.; \nb) Prefiere dedicar su tiempo en conocer las costumbres y tradicionales de los pueblos.",
+    "a) Le interesa mucho conocer el trámite documentario de un ministerio público; \nb) Prefiere el estudio de las religiones.",
+    "a) Le interesa mucho conocer los mecanismos de la economía nacional; \nb) Prefiere ser guía espiritual de las personas.",
     "a) Le gusta ser parte de la administración de una cooperativa; \nb) Prefiere el estudio de las formas más efectivas para la enseñanza de jóvenes y niños.",
     "a) Le interesa mucho investigar la raíz gramatical de las palabras de su idioma; \nb) Prefiere dedicar su tiempo en la búsqueda de huacos y ruinas.",
     "a) Le agrada mucho estudiar el código del derecho civil; \nb) Prefiere el estudio de las culturas peruanas y de otras naciones.",
@@ -83,7 +82,7 @@ preguntas = [
     "a) Cuando está dando un examen y tiene la oportunidad de verificar una respuesta, nunca lo hace; \nb) Prefiere aprovechar la seguridad que la ocasión le confiere.",
     "a) Le interesa investigar sobre los problemas del lenguaje en la comunicación masiva; \nb) Prefiere redactar documentos legales para contratos internacionales.",
     "a) Le gusta trabajar haciendo instalaciones eléctricas; \nb) Prefiere dedicar su tiempo en la lectura de las novedades en la decoración de ambientes.",
-     "a) Le agrada mucho visitar el hogar de los trabajadores con el fin de verificar su verdadera situación social y económica; \nb) Prefiere trabajar en el decorado de tiendas y vitrinas.",
+    "a) Le agrada mucho visitar el hogar de los trabajadores con el fin de verificar su verdadera situación social y económica; \nb) Prefiere trabajar en el decorado de tiendas y vitrinas.",
     "a) Le gusta estudiar los recursos geográficos; \nb) Prefiere observar el comportamiento de las personas e imitarlas.",
     "a) Le gusta dedicar su tiempo a la organización de eventos deportivos entre dos o más centros laborales; \nb) Prefiere dedicarse al estudio de la vida y obra de los grandes actores del cine y del teatro.",
     "a) Le gusta la idea de estudiar escultura en la escuela de bellas artes; \nb) Le atrae ser parte de un elenco de teatro.",
@@ -178,10 +177,17 @@ preguntas = [
 # --- Interfaz Streamlit ---
 st.title("Career Guidance Test with Machine Learning")
 
-respuestas = [
-    st.radio(f"{i + 1}. {texto}", ['a', 'b', 'ambas'], key=f"preg_{i + 1}")
-    for i, texto in enumerate(preguntas)
-]
+respuestas = []
+
+for i, pregunta in enumerate(preguntas):
+    st.markdown(f"<b>{i + 1}.</b> {pregunta.replace(';', '').replace('\n', '<br>')}", unsafe_allow_html=True)
+    respuesta = st.radio(
+        label="",  # evita repetir texto largo en radio
+        options=['a', 'b', 'ambas'],
+        key=f"preg_{i + 1}"
+    )
+    respuestas.append(respuesta)
+
 
 if st.button("Predecir perfil vocacional"):
     puntajes = calcular_puntajes_directos(respuestas)
