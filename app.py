@@ -1,18 +1,66 @@
 import streamlit as st
 import joblib
 
+# Áreas del CASM-83
 areas = [
     'CCFM', 'CCSS', 'CCNA', 'CCCO', 'ARTE', 'BURO',
     'CCEP', 'IIAA', 'FINA', 'LING', 'JURI'
 ]
 
-# COLUMNAS (letra "a") - 0-based indices
+carreras_por_area = {
+    "CCFM": [
+        "Ingenierías: Civil, de Sistemas, Industrial, Electrónica, de Minas, Sanitaria, Textil, Química, Mecánica (eléctrica y de fluidos), Telecomunicaciones, de Sonido, Metalurgia.",
+        "Arquitectura", "Matemáticas", "Física", "Meteorología", "Geografía", "Geología",
+        "Técnicos relacionados: Técnico en TV y radio, electricista, mecánico automotriz, mecánico de banco, mecánica de aviones, construcción civil, impresor, linotipista, topografía, computación e informática, ensamblaje, mantenimiento y reparación de computadoras, operador técnico de radio y televisión."
+    ],
+    "CCSS": [
+        "Antropología", "Sociología", "Trabajo Social", "Historia", "Arqueología", "Filosofía",
+        "Teología", "Psicología", "Auxiliar de educación"
+    ],
+    "CCNA": [
+        "Medicina Humana", "Obstetricia", "Enfermería", "Nutrición", "Biología", "Odontología",
+        "Químico - Farmacéutico", "Medicina Veterinaria", "Agronomía", "Zootecnia", "Psicología",
+        "Industrias Alimentarias", "Geografía"
+    ],
+    "CCCO": [
+        "Ciencias de la Comunicación", "Periodismo", "Publicidad", "Comunicación audiovisual (cine, radio y televisión)",
+        "Relaciones Públicas", "Técnico en TV y radio", "Visitador médico", "Guía turístico", "Promotores de turismo"
+    ],
+    "ARTE": [
+        "Artesanías en cerámica, cueros, tejido, etc.", "Pintor", "Actor", "Escultor", "Decorador",
+        "Diseñador de modas", "Director de cine y televisión", "Músico", "Profesor de música",
+        "Crítico musical", "Arquitectura", "Técnico en dibujo lineal", "Publicitario", "Ebanistería",
+        "Decoración de interiores", "Conservación y restauración", "Fotografía profesional", "Fotografía"
+    ],
+    "BURO": [
+        "Empleado de oficina", "Bibliotecario", "Secretario(a): ejecutivo, bilingüe, aerocomercial, computarizado, médico",
+        "Archivero", "Bibliotecología y Ciencias de la Información"
+    ],
+    "CCEP": [
+        "Economista", "Estadista", "Político Diplomático", "Administrador de empresas: hotelera, turismo, comercio nacional e internacional",
+        "Marketing", "Visitador médico", "Escritor", "Lingüista", "Traductor e intérprete de idiomas"
+    ],
+    "IIAA": [
+        "Oficial del Ejército", "Oficial de la Fuerza Aérea del Perú (FAP)", "Oficial de la Marina", "Oficial de la Policía", "CITEN", "ETE"
+    ],
+    "FINA": [
+        "Contabilidad", "Finanzas", "Banca y seguros", "Auxiliar de contabilidad", "Bancario", "Secretario contable", "Vendedor"
+    ],
+    "LING": [
+        "Escritor", "Lingüista", "Traductor e intérprete de idiomas", "Secretario bilingüe"
+    ],
+    "JURI": [
+        "Derecho: Penal, Civil, Laboral", "Notario público", "Escribano", "Secretario legal"
+    ]
+}
+
+# Índices columna (letra "a")
 column_items = {}
 for idx, area in enumerate(areas):
     items = [idx + 13 * i for i in range(11)]  # p1 index 0, p14 index 13, etc.
     column_items[area] = items
 
-# FILAS (letra "b") - 0-based indices
+# Índices fila (letra "b")
 row_items = {}
 for idx, area in enumerate(areas):
     start = idx * 11
@@ -20,6 +68,7 @@ for idx, area in enumerate(areas):
     items = list(range(start, end))
     row_items[area] = items
 
+# Función para calcular puntajes directos
 def calcular_puntajes_directos(respuestas):
     puntajes = []
     for area in areas:
@@ -27,7 +76,6 @@ def calcular_puntajes_directos(respuestas):
         b_count = sum(respuestas[i] == 'b' or respuestas[i] == 'ambas' for i in row_items[area])
         puntajes.append(a_count + b_count)
     return puntajes
-
 
 preguntas = [
     "a) Le gusta resolver problemas de matemáticas; o\n b) Prefiere diseñar el modelo de casas, edificios, parques, etc.",
@@ -179,20 +227,62 @@ st.title("Career Guidance Test with Machine Learning")
 
 respuestas = []
 
-for i, pregunta in enumerate(preguntas):
-    st.markdown(f"<b>{i + 1}.</b> {pregunta.replace(';', '').replace('\n', '<br>')}", unsafe_allow_html=True)
-    respuesta = st.radio(
-        label="",  # evita repetir texto largo en radio
-        options=['a', 'b', 'ambas'],
-        key=f"preg_{i + 1}"
-    )
-    respuestas.append(respuesta)
+cols_por_fila = 5  # número de columnas (preguntas) por fila
 
+for i in range(0, len(preguntas), cols_por_fila):
+    cols = st.columns(cols_por_fila)
+    for j in range(cols_por_fila):
+        idx = i + j
+        if idx < len(preguntas):
+            with cols[j]:
+                st.markdown(f"<b>{idx + 1}.</b> {preguntas[idx].replace(';', '').replace('\n', '<br>')}", unsafe_allow_html=True)
+                respuesta = st.radio(
+                    label="",
+                    options=['a', 'b', 'ambas'],
+                    key=f"preg_{idx + 1}"
+                )
+                respuestas.append(respuesta)
+                st.markdown("<br>", unsafe_allow_html=True)  # espacio vertical
 
+# Botón de predicción
 if st.button("Predecir perfil vocacional"):
-    puntajes = calcular_puntajes_directos(respuestas)
-    modelo = joblib.load('modelo_rf.pkl')
-    le = joblib.load('label_encoder.pkl')
-    area_predicha = le.inverse_transform(modelo.predict([puntajes]))[0]
-    st.success(f"Área vocacional dominante predicha por el modelo: **{area_predicha}**")
-    st.write("Puntajes directos usados:", dict(zip(areas, puntajes)))
+    if len(respuestas) == len(preguntas):
+        puntajes = calcular_puntajes_directos(respuestas)
+        modelo = joblib.load('modelo_rf.pkl')
+        le = joblib.load('label_encoder.pkl')
+        area_predicha = le.inverse_transform(modelo.predict([puntajes]))[0]
+
+        st.success(f"Área vocacional dominante predicha por el modelo: **{area_predicha}**")
+        st.write("Puntajes directos usados:", dict(zip(areas, puntajes)))
+
+        # Mostrar carreras sugeridas
+        if area_predicha in carreras_por_area:
+           
+            st.subheader("Carreras recomendadas según tu perfil vocacional:")
+            for carrera in carreras_por_area[area_predicha]:
+                st.markdown(f"- {carrera}")
+        else:
+            st.warning("No se encontraron carreras asociadas a esta área.")
+
+        # Recomendación final reflexiva
+        st.markdown("---")
+        st.markdown(
+            """
+            <div style='background-color: #e8f4f8; padding: 20px; border-radius: 10px; border-left: 5px solid #3498db;'>
+                <h4>🔍 Recomendación final</h4>
+                <p style='font-size: 16px;'>
+                    Este resultado representa una orientación basada en tus intereses actuales y no debe considerarse una decisión definitiva. 
+                    La elección de una carrera profesional es un proceso personal que debe considerar no solo tus habilidades e inclinaciones, 
+                    sino también tus metas, valores y aspiraciones a largo plazo.
+                </p>
+                <p style='font-size: 16px;'>
+                    Si el área sugerida coincide con lo que te motiva, puedes tomarlo como una confirmación. 
+                    Pero si no, recuerda que lo más importante es construir un camino con sentido, compromiso y pasión.
+                </p>
+                <p><i>“No preguntes qué necesita el mundo. Pregúntate qué te hace sentir vivo, y ve y haz eso. Porque lo que el mundo necesita es gente que se sienta viva”.<br>– Howard Thurman</i></p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        st.warning("Por favor, responde todas las preguntas antes de predecir.")
